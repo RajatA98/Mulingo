@@ -30,9 +30,19 @@
                         Click on any key to hear its sound. Let's begin by learning the white keys!
                     </p>
                     
-                    <div class="note-display">
-                        <div class="current-note" id="current-note">--</div>
-                        <div class="note-name" id="note-name">Press a key</div>
+                    <div class="sheet-music-container">
+                        <div class="sheet-music" id="sheet-music">
+                            <svg id="staff-svg" width="200" height="200" viewBox="0 0 200 200">
+                                <!-- Staff lines -->
+                                <line x1="20" y1="40" x2="180" y2="40" stroke="#333" stroke-width="1.5"/>
+                                <line x1="20" y1="60" x2="180" y2="60" stroke="#333" stroke-width="1.5"/>
+                                <line x1="20" y1="80" x2="180" y2="80" stroke="#333" stroke-width="1.5"/>
+                                <line x1="20" y1="100" x2="180" y2="100" stroke="#333" stroke-width="1.5"/>
+                                <line x1="20" y1="120" x2="180" y2="120" stroke="#333" stroke-width="1.5"/>
+                                <!-- Clef will be added dynamically -->
+                                <!-- Notes will be added here dynamically -->
+                            </svg>
+                        </div>
                     </div>
 
                     <div class="lesson-controls">
@@ -80,6 +90,7 @@
 
     <script src="piano.js"></script>
     <script src="lessons.js"></script>
+    <script src="sheetmusic.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

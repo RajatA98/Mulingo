@@ -128,6 +128,31 @@ body {
     letter-spacing: 2px;
 }
 
+.sheet-music-container {
+    margin: 30px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sheet-music {
+    width: 200px;
+    height: 200px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#staff-svg {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+}
+
 .lesson-controls {
     display: flex;
     gap: 10px;
@@ -256,16 +281,19 @@ body {
 .white-key {
     width: 50px;
     height: 200px;
-    background: var(--white-key-color);
-    border: 1px solid #ccc;
-    border-radius: 0 0 6px 6px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(to bottom, #ffffff 0%, #f8f8f8 100%);
+    border: 1px solid #ddd;
+    border-top: 2px solid #e0e0e0;
+    border-radius: 0 0 8px 8px;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-bottom: 10px;
-    color: #333;
+    padding-bottom: 12px;
+    color: #2c3e50;
     font-weight: 600;
+    font-size: 0.95rem;
+    margin-right: -1px;
 }
 
 .white-key:hover {
@@ -279,20 +307,22 @@ body {
 }
 
 .black-key {
-    width: 35px;
+    width: 32px;
     height: 120px;
-    background: var(--black-key-color);
-    border-radius: 0 0 4px 4px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(to bottom, #1a1a1a 0%, #0a0a0a 100%);
+    border: 1px solid #000;
+    border-radius: 0 0 5px 5px;
+    box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.1), 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     position: absolute;
     z-index: 10;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    padding-bottom: 8px;
     color: white;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    text-align: center;
 }
 
 .black-key:hover {
@@ -307,7 +337,20 @@ body {
 
 .key-label {
     font-size: 0.85rem;
-    opacity: 0.7;
+    opacity: 0.8;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.white-key .key-label {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.black-key .key-label {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.7rem;
+    line-height: 1.1;
 }
 
 .piano-controls {

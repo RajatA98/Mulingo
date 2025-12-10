@@ -4,6 +4,7 @@ class PianoLearningApp {
     constructor() {
         this.piano = null;
         this.lessonManager = null;
+        this.sheetMusic = null;
         this.init();
     }
 
@@ -11,17 +12,16 @@ class PianoLearningApp {
         // Initialize piano and lesson manager
         this.piano = new Piano();
         this.lessonManager = new LessonManager();
+        this.sheetMusic = new SheetMusic();
 
         // Make app globally accessible
         window.app = this;
         window.piano = this.piano;
         window.lessonManager = this.lessonManager;
+        window.sheetMusic = this.sheetMusic;
 
         // Setup UI event listeners
         this.setupUIListeners();
-
-        // Display welcome message
-        this.updateNoteDisplay('--', 'Press a key');
     }
 
     setupUIListeners() {
@@ -42,6 +42,10 @@ class PianoLearningApp {
             this.lessonManager.resetLesson();
             document.getElementById('start-lesson-btn').style.display = 'block';
             document.getElementById('next-lesson-btn').style.display = 'none';
+            // Clear sheet music when resetting
+            if (this.sheetMusic) {
+                this.sheetMusic.clear();
+            }
         });
     }
 
@@ -55,22 +59,18 @@ class PianoLearningApp {
     }
 
     onKeyPress(note) {
-        // Update note display
-        const noteDisplay = this.piano.getNoteDisplay(note);
-        this.updateNoteDisplay(noteDisplay, note);
-
         // Highlight the key
         this.piano.highlightKey(note);
+
+        // Add note to sheet music
+        if (this.sheetMusic) {
+            this.sheetMusic.addNote(note);
+        }
 
         // Check if we're in an exercise
         if (this.lessonManager.currentExercise) {
             this.lessonManager.checkNote(note);
         }
-    }
-
-    updateNoteDisplay(noteSymbol, noteName) {
-        document.getElementById('current-note').textContent = noteSymbol;
-        document.getElementById('note-name').textContent = noteName;
     }
 }
 
