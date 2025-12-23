@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Piano Learning App - Learn Piano for Beginners</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=SIMPLE8">
 </head>
 <body>
     <div class="app-container">
@@ -32,13 +35,13 @@
                     
                     <div class="sheet-music-container">
                         <div class="sheet-music" id="sheet-music">
-                            <svg id="staff-svg" width="200" height="200" viewBox="0 0 200 200">
-                                <!-- Staff lines -->
-                                <line x1="20" y1="40" x2="180" y2="40" stroke="#333" stroke-width="1.5"/>
-                                <line x1="20" y1="60" x2="180" y2="60" stroke="#333" stroke-width="1.5"/>
-                                <line x1="20" y1="80" x2="180" y2="80" stroke="#333" stroke-width="1.5"/>
-                                <line x1="20" y1="100" x2="180" y2="100" stroke="#333" stroke-width="1.5"/>
-                                <line x1="20" y1="120" x2="180" y2="120" stroke="#333" stroke-width="1.5"/>
+                            <svg id="staff-svg" width="220" height="160" viewBox="0 0 220 160">
+                                <!-- Staff lines (centered vertically) -->
+                                <line x1="30" y1="60" x2="190" y2="60" stroke="#333" stroke-width="1.5"/>
+                                <line x1="30" y1="70" x2="190" y2="70" stroke="#333" stroke-width="1.5"/>
+                                <line x1="30" y1="80" x2="190" y2="80" stroke="#333" stroke-width="1.5"/>
+                                <line x1="30" y1="90" x2="190" y2="90" stroke="#333" stroke-width="1.5"/>
+                                <line x1="30" y1="100" x2="190" y2="100" stroke="#333" stroke-width="1.5"/>
                                 <!-- Clef will be added dynamically -->
                                 <!-- Notes will be added here dynamically -->
                             </svg>
@@ -67,6 +70,10 @@
                     </div>
                 </div>
                 
+                <p style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">
+                    🎹 88-Key Piano • Scroll horizontally to explore all keys
+                </p>
+                
                 <div class="piano-controls">
                     <label class="checkbox-label">
                         <input type="checkbox" id="show-note-names" checked>
@@ -75,6 +82,10 @@
                     <label class="checkbox-label">
                         <input type="checkbox" id="highlight-keys" checked>
                         <span>Highlight Keys</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="prefer-flats">
+                        <span>Prefer Flats (♭) in Sheet Music</span>
                     </label>
                 </div>
             </div>
@@ -88,10 +99,10 @@
         </div>
     </div>
 
-    <script src="piano.js"></script>
-    <script src="lessons.js"></script>
-    <script src="sheetmusic.js"></script>
-    <script src="app.js"></script>
+    <script src="piano.js?v=SIMPLE8"></script>
+    <script src="lessons.js?v=SIMPLE8"></script>
+    <script src="sheetmusic.js?v=SIMPLE8"></script>
+    <script src="app.js?v=SIMPLE8"></script>
 </body>
 </html>
 

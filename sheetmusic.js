@@ -7,6 +7,8 @@ class SheetMusic {
         this.noteSpacing = 40; // Space between notes
         this.maxNotes = 15; // Maximum notes to show before scrolling
         this.playedNotes = []; // Array of {note, x, y, duration}
+        this.preferFlats = false; // User preference for displaying flats vs sharps
+        this.currentOctaveShift = 0; // Track if we're showing 8va or 8vb
         this.init();
     }
 
@@ -34,11 +36,66 @@ class SheetMusic {
     clearNotes() {
         // Remove all note elements but keep staff lines and clef
         if (this.svg) {
-            const notes = this.svg.querySelectorAll('.music-note, .ledger-line');
-            notes.forEach(note => note.remove());
+            // Remove by groups to ensure all related elements are removed
+            const noteGroups = this.svg.querySelectorAll('.music-note');
+            noteGroups.forEach(group => group.remove());
+            // Also remove any orphaned elements
+            const orphaned = this.svg.querySelectorAll('.ledger-line, .octave-notation');
+            orphaned.forEach(el => el.remove());
         }
         this.playedNotes = [];
         this.notePosition = 100;
+        this.currentOctaveShift = 0;
+    }
+
+    setFlatPreference(preferFlats) {
+        this.preferFlats = preferFlats;
+        // Redraw current note with new preference if there is one
+        if (this.playedNotes.length > 0) {
+            const currentNote = this.playedNotes[0].note;
+            this.addNote(currentNote);
+        }
+    }
+
+    convertToFlat(note) {
+        // Convert sharp notes to their flat equivalents
+        const sharpToFlat = {
+            'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'Bb'
+        };
+        
+        const match = note.match(/([A-G]#?)(\d)/);
+        if (!match) return note;
+        
+        const [, noteName, octave] = match;
+        if (sharpToFlat[noteName]) {
+            return sharpToFlat[noteName] + octave;
+        }
+        return note;
+    }
+
+    convertToSharp(note) {
+        // Convert flat notes to their sharp equivalents
+        const flatToSharp = {
+            'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#'
+        };
+        
+        const match = note.match(/([A-G]b?)(\d)/);
+        if (!match) return note;
+        
+        const [, noteName, octave] = match;
+        if (flatToSharp[noteName]) {
+            return flatToSharp[noteName] + octave;
+        }
+        return note;
+    }
+
+    getDisplayNote(note) {
+        // Return the note in the preferred format (sharp or flat)
+        if (this.preferFlats) {
+            return this.convertToFlat(note);
+        } else {
+            return this.convertToSharp(note);
+        }
     }
 
     addNote(note) {
@@ -49,37 +106,91 @@ class SheetMusic {
         }
 
         // Clear previous note - show only one note at a time
-        this.clearNotes();
+        // Force immediate clearing before drawing
+        if (this.svg) {
+            const existingNotes = this.svg.querySelectorAll('.music-note, .ledger-line, .octave-notation');
+            existingNotes.forEach(el => {
+                try {
+                    el.remove();
+                } catch (e) {
+                    // Ignore if already removed
+                }
+            });
+        }
+        this.playedNotes = [];
+        this.currentOctaveShift = 0;
 
-        // Parse note (e.g., "C4", "C#4", "D4")
-        const parsed = this.parseNote(note);
+        // Convert to preferred format (sharp or flat)
+        const displayNote = this.getDisplayNote(note);
+
+        // Parse note (e.g., "C4", "C#4", "Db4", "D4")
+        const parsed = this.parseNote(displayNote);
         if (!parsed) {
             console.log('Could not parse note:', note);
             return;
         }
 
-        const { noteName, octave, isSharp } = parsed;
+        let { noteName, octave, isSharp, isFlat, accidental } = parsed;
         
-        // Determine which clef to use
-        const clef = this.getClefForNote(octave);
+        // Determine if we need octave transposition (8va/8vb)
+        // Use 8va/8vb when notes would have more than 2 ledger lines
+        let octaveShift = 0;
+        let clef = this.getClefForNote(octave, noteName);
+        
+        if (clef === 'treble') {
+            // Treble clef staff range: E4 (bottom line) to F5 (top line)
+            // Allow max 2 ledger lines: down to C4, up to A5
+            // Beyond that, use 8va/8vb
+            if (octave >= 6) {
+                // Notes C6 and above: use 8va (display octave lower)
+                octaveShift = -1;
+            } else if (octave <= 3) {
+                // Notes B3 and below: switch to bass clef
+                clef = 'bass';
+                octaveShift = 0;
+            }
+        }
+        
+        if (clef === 'bass') {
+            // Bass clef staff range: G2 (bottom line) to A3 (top line)
+            // Allow max 2 ledger lines: down to E2, up to C4
+            // Beyond that, use 8va/8vb
+            if (octave <= 1) {
+                // Notes B1 and below: use 8vb (display octave higher)
+                octaveShift = 1;
+            } else if (octave >= 4) {
+                // Notes C4 and above: switch to treble clef
+                clef = 'treble';
+                octaveShift = 0;
+            }
+        }
+        
+        // Apply octave shift for display
+        const displayOctave = octave + octaveShift;
+        this.currentOctaveShift = octaveShift;
+        
         this.updateClef(clef);
         
-        // Calculate y position on staff
-        const yPosition = this.getNoteYPosition(noteName, octave);
+        // Calculate y position on staff (using display octave)
+        const yPosition = this.getNoteYPosition(noteName, displayOctave);
         
         // Add note to array (only one note now)
         this.playedNotes = [{
-            note: note,
-            x: 100, // Center position for smaller square
+            note: displayNote,
+            x: 110, // Center position for centered staff
             y: yPosition,
             noteName: noteName,
             octave: octave,
-            isSharp: isSharp
+            displayOctave: displayOctave,
+            isSharp: isSharp,
+            isFlat: isFlat,
+            accidental: accidental,
+            octaveShift: octaveShift
         }];
 
-        // Draw the note (centered on staff - smaller square)
-        const centerX = 100; // Center of the smaller square staff
-        this.drawNote(centerX, yPosition, noteName, octave, isSharp);
+        // Draw the note (centered on staff)
+        const centerX = 110; // Center of the centered staff
+        this.drawNote(centerX, yPosition, noteName, displayOctave, accidental, octaveShift);
     }
 
     updateClef(clef) {
@@ -93,33 +204,33 @@ class SheetMusic {
         const clefElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         clefElement.classList.add('clef');
         clefElement.setAttribute('font-family', 'serif');
-        clefElement.setAttribute('font-size', '48');
+        clefElement.setAttribute('font-size', '52');
         clefElement.setAttribute('fill', '#000');
         clefElement.setAttribute('font-weight', 'bold');
         
         if (clef === 'treble') {
-            // Treble clef - use a music symbol
+            // Treble clef - use a music symbol (centered on new staff)
             clefElement.setAttribute('x', '15');
-            clefElement.setAttribute('y', '110');
+            clefElement.setAttribute('y', '98');
             clefElement.textContent = '𝄞'; // Treble clef symbol
         } else {
-            // Bass clef - draw two dots and a symbol
-            clefElement.setAttribute('x', '20');
-            clefElement.setAttribute('y', '100');
+            // Bass clef - draw two dots and a symbol (centered on new staff)
+            clefElement.setAttribute('x', '15');
+            clefElement.setAttribute('y', '95');
             clefElement.textContent = '𝄢'; // Bass clef symbol
             // Add two dots for bass clef
             const dot1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             dot1.setAttribute('cx', '45');
-            dot1.setAttribute('cy', '85');
-            dot1.setAttribute('r', '2.5');
+            dot1.setAttribute('cy', '80');
+            dot1.setAttribute('r', '2');
             dot1.setAttribute('fill', '#000');
             dot1.classList.add('clef');
             this.svg.appendChild(dot1);
             
             const dot2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             dot2.setAttribute('cx', '45');
-            dot2.setAttribute('cy', '105');
-            dot2.setAttribute('r', '2.5');
+            dot2.setAttribute('cy', '90');
+            dot2.setAttribute('r', '2');
             dot2.setAttribute('fill', '#000');
             dot2.classList.add('clef');
             this.svg.appendChild(dot2);
@@ -129,112 +240,215 @@ class SheetMusic {
     }
 
     parseNote(note) {
-        // Parse note like "C4", "C#4", "D4", etc.
-        const match = note.match(/([A-G])(#)?(\d)/);
+        // Parse note like "C4", "C#4", "Db4", "D4", etc.
+        const match = note.match(/([A-G])([#b])?(\d)/);
         if (!match) return null;
 
         const noteName = match[1];
-        const isSharp = match[2] === '#';
+        const accidental = match[2];
+        const isSharp = accidental === '#';
+        const isFlat = accidental === 'b';
         const octave = parseInt(match[3]);
 
-        return { noteName, octave, isSharp };
+        return { noteName, octave, isSharp, isFlat, accidental: accidental || '' };
     }
 
     getNoteYPosition(noteName, octave) {
-        // Staff line positions: 40 (top/F5), 60 (D5), 80 (B4), 100 (G4), 120 (E4/bottom)
-        // Treble clef: E4=120, F4=110, G4=100, A4=90, B4=80, C5=70, D5=60, E5=50, F5=40
+        // NEW Staff line positions: 60 (top line), 70, 80 (middle line), 90, 100 (bottom line)
+        // Each space/line is 5px apart (tighter spacing for centered display)
         
-        // Direct mapping for common notes in C4-C6 range
-        // Treble clef: E4=120(bottom line), F4=110, G4=100, A4=90, B4=80, C5=70, D5=60, E5=50, F5=40(top line)
-        const noteMap = {
-            'C4': 140, 'D4': 130, 'E4': 120, 'F4': 110, 'G4': 100, 'A4': 90, 'B4': 80,
-            'C5': 70, 'D5': 60, 'E5': 50, 'F5': 40, 'G5': 30, 'A5': 20, 'B5': 10,
-            'C6': 0
-        };
+        // Handle sharps and flats - use same position as natural note
+        const naturalNote = noteName.replace(/[#b]/g, '');
         
-        // Handle sharps - use same position as natural note
-        const naturalNote = noteName.replace('#', '');
-        const noteKey = `${naturalNote}${octave}`;
+        // Determine if we're using bass or treble clef
+        const clef = this.getClefForNote(octave, naturalNote);
         
-        if (noteMap[noteKey] !== undefined) {
-            return noteMap[noteKey];
+        if (clef === 'treble') {
+            // Treble clef mapping - centered on staff
+            // Staff lines (top to bottom): F5=60, D5=70, B4=80, G4=90, E4=100
+            // Spaces: E5=65, C5=75, A4=85, F4=95
+            // Ledger lines: below staff at 110, 120; above staff at 50, 40
+            const trebleMap = {
+                'C4': 110, 'D4': 105, 'E4': 100, 'F4': 95, 'G4': 90, 'A4': 85, 'B4': 80,
+                'C5': 75, 'D5': 70, 'E5': 65, 'F5': 60, 'G5': 55, 'A5': 50, 'B5': 45,
+                'C6': 40, 'D6': 35, 'E6': 30, 'F6': 25, 'G6': 20, 'A6': 15, 'B6': 10,
+                'C7': 5, 'D7': 0, 'E7': -5, 'F7': -10, 'G7': -15, 'A7': -20, 'B7': -25,
+                'C8': -30
+            };
+            
+            const noteKey = `${naturalNote}${octave}`;
+            if (trebleMap[noteKey] !== undefined) {
+                return trebleMap[noteKey];
+            }
+        } else {
+            // Bass clef mapping - centered on staff
+            // Staff lines (top to bottom): A3=60, F3=70, D3=80, B2=90, G2=100
+            // Spaces: G3=65, E3=75, C3=85, A2=95
+            // Ledger lines: below staff at 110, 120; above staff at 50, 40
+            const bassMap = {
+                'A0': 150, 'B0': 145,
+                'C1': 140, 'D1': 135, 'E1': 130, 'F1': 125, 'G1': 120, 'A1': 115, 'B1': 110,
+                'C2': 120, 'D2': 115, 'E2': 110, 'F2': 105, 'G2': 100, 'A2': 95, 'B2': 90,
+                'C3': 85, 'D3': 80, 'E3': 75, 'F3': 70, 'G3': 65, 'A3': 60, 'B3': 55,
+                'C4': 50
+            };
+            
+            const noteKey = `${naturalNote}${octave}`;
+            if (bassMap[noteKey] !== undefined) {
+                return bassMap[noteKey];
+            }
         }
         
         // Fallback calculation
         const noteOrder = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
         const noteIndex = noteOrder.indexOf(naturalNote);
-        const octaveOffset = (octave - 4) * 70; // Approximate 70px per octave
-        const noteOffset = noteIndex * 10; // Approximate 10px per note
-        return 130 - octaveOffset - noteOffset;
+        const octaveOffset = (octave - 4) * 35;
+        const noteOffset = noteIndex * 5;
+        return 105 - octaveOffset - noteOffset;
     }
 
-    getClefForNote(octave) {
-        // Use treble clef for C4 and above, bass clef for below C4
-        // For our keyboard range (C4-C6), we'll use treble clef
-        if (octave >= 4) {
-            return 'treble';
-        } else {
+    getClefForNote(octave, noteName) {
+        // Use bass clef for notes below C4, treble clef for C4 and above
+        // Middle C (C4) and above use treble clef
+        if (octave < 3) {
             return 'bass';
+        } else if (octave === 3) {
+            // For octave 3, use bass clef
+            return 'bass';
+        } else {
+            return 'treble';
         }
     }
 
-    drawNote(x, y, noteName, octave, isSharp) {
+    drawNote(x, y, noteName, octave, accidental, octaveShift = 0) {
         const noteGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         noteGroup.classList.add('music-note');
 
-        // Draw note head (circle) - scaled for smaller square
+        // Draw note head (filled ellipse for quarter note) - solid unbroken shape
         const noteHead = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
         noteHead.setAttribute('cx', x);
         noteHead.setAttribute('cy', y);
-        noteHead.setAttribute('rx', '6');
-        noteHead.setAttribute('ry', '4');
+        noteHead.setAttribute('rx', '5.5');
+        noteHead.setAttribute('ry', '4.5');
         noteHead.setAttribute('fill', '#000');
+        noteHead.setAttribute('stroke', 'none');
+        noteHead.setAttribute('shape-rendering', 'geometricPrecision');
+        noteHead.setAttribute('vector-effect', 'non-scaling-stroke');
         noteGroup.appendChild(noteHead);
 
         // Draw stem (if note is on or above middle line, stem goes down)
-        const stemDirection = y <= 80 ? 1 : -1; // 1 = down, -1 = up
-        const stemLength = 25;
+        const stemDirection = y <= 80 ? 1 : -1; // 1 = down, -1 = up (middle line at 80)
+        const stemLength = 30;
+        const stemX = stemDirection === 1 ? x + 5 : x - 5; // Stem on right if down, left if up
         const stem = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        stem.setAttribute('x1', x + 6);
+        stem.setAttribute('x1', stemX);
         stem.setAttribute('y1', y);
-        stem.setAttribute('x2', x + 6);
+        stem.setAttribute('x2', stemX);
         stem.setAttribute('y2', y + (stemLength * stemDirection));
         stem.setAttribute('stroke', '#000');
-        stem.setAttribute('stroke-width', '1.5');
+        stem.setAttribute('stroke-width', '1.2');
         noteGroup.appendChild(stem);
 
-        // Draw sharp symbol if needed
-        if (isSharp) {
+        // Draw accidental symbol if needed (sharp or flat)
+        if (accidental === '#') {
             const sharp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            sharp.setAttribute('x', x - 12);
-            sharp.setAttribute('y', y + 3);
-            sharp.setAttribute('font-family', 'Arial');
-            sharp.setAttribute('font-size', '12');
+            sharp.setAttribute('x', x - 14);
+            sharp.setAttribute('y', y + 4);
+            sharp.setAttribute('font-family', 'serif');
+            sharp.setAttribute('font-size', '16');
             sharp.setAttribute('fill', '#000');
             sharp.setAttribute('font-weight', 'bold');
             sharp.textContent = '♯';
             noteGroup.appendChild(sharp);
+        } else if (accidental === 'b') {
+            const flat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            flat.setAttribute('x', x - 14);
+            flat.setAttribute('y', y + 5);
+            flat.setAttribute('font-family', 'serif');
+            flat.setAttribute('font-size', '18');
+            flat.setAttribute('fill', '#000');
+            flat.setAttribute('font-weight', 'bold');
+            flat.textContent = '♭';
+            noteGroup.appendChild(flat);
         }
 
-        // Draw ledger lines if note is outside staff (staff lines at 40, 60, 80, 100, 120)
-        // Notes above top line (40) or below bottom line (120) need ledger lines
-        if (y < 40) {
-            // Above staff - draw ledger lines every 20px (matching staff line spacing)
-            let ledgerY = 40;
-            while (ledgerY >= y - 5) {
+        // Draw ledger lines if note is outside staff (NEW staff lines at 60, 70, 80, 90, 100)
+        // Staff lines are 10px apart, so ledger lines should be too
+        // Max 2 ledger lines before switching to 8va/8vb
+        if (y < 60) {
+            // Above staff - draw ledger lines every 10px (matching staff line spacing)
+            let ledgerY = 50;
+            let lineCount = 0;
+            while (ledgerY >= y - 3 && lineCount < 2) {
                 this.drawLedgerLine(x, ledgerY, noteGroup);
-                ledgerY -= 20;
+                ledgerY -= 10;
+                lineCount++;
             }
-        } else if (y > 120) {
-            // Below staff - draw ledger lines every 20px
-            let ledgerY = 120;
-            while (ledgerY <= y + 5) {
+        } else if (y > 100) {
+            // Below staff - draw ledger lines every 10px (matching staff line spacing)
+            let ledgerY = 110;
+            let lineCount = 0;
+            while (ledgerY <= y + 3 && lineCount < 2) {
                 this.drawLedgerLine(x, ledgerY, noteGroup);
-                ledgerY += 20;
+                ledgerY += 10;
+                lineCount++;
             }
         }
 
         this.svg.appendChild(noteGroup);
+
+        // Draw 8va or 8vb notation if needed
+        if (octaveShift !== 0) {
+            this.drawOctaveNotation(x, y, octaveShift);
+        }
+    }
+
+    drawOctaveNotation(x, y, octaveShift) {
+        // Draw 8va (octave higher) or 8vb (octave lower) notation
+        const notationGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        notationGroup.classList.add('octave-notation');
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        
+        if (octaveShift === -1) {
+            // 8va - note sounds an octave higher than written
+            text.setAttribute('x', x - 8);
+            text.setAttribute('y', '35');
+            text.textContent = '8va';
+        } else if (octaveShift === 1) {
+            // 8vb - note sounds an octave lower than written
+            text.setAttribute('x', x - 8);
+            text.setAttribute('y', '130');
+            text.textContent = '8vb';
+        }
+
+        text.setAttribute('font-family', 'serif');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-style', 'italic');
+        text.setAttribute('fill', '#000');
+        text.setAttribute('font-weight', 'bold');
+        
+        notationGroup.appendChild(text);
+
+        // Draw dotted line extending from the notation
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        if (octaveShift === -1) {
+            line.setAttribute('x1', x + 10);
+            line.setAttribute('y1', '38');
+            line.setAttribute('x2', x + 40);
+            line.setAttribute('y2', '38');
+        } else {
+            line.setAttribute('x1', x + 10);
+            line.setAttribute('y1', '125');
+            line.setAttribute('x2', x + 40);
+            line.setAttribute('y2', '125');
+        }
+        line.setAttribute('stroke', '#000');
+        line.setAttribute('stroke-width', '1');
+        line.setAttribute('stroke-dasharray', '2,2');
+        
+        notationGroup.appendChild(line);
+        this.svg.appendChild(notationGroup);
     }
 
     drawLedgerLine(x, y, noteGroup) {

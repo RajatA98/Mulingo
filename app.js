@@ -47,6 +47,13 @@ class PianoLearningApp {
                 this.sheetMusic.clear();
             }
         });
+
+        // Prefer flats toggle
+        document.getElementById('prefer-flats').addEventListener('change', (e) => {
+            if (this.sheetMusic) {
+                this.sheetMusic.setFlatPreference(e.target.checked);
+            }
+        });
     }
 
     startLesson() {

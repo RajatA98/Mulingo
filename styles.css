@@ -136,11 +136,11 @@ body {
 }
 
 .sheet-music {
-    width: 200px;
-    height: 200px;
+    width: 220px;
+    height: 180px;
     background: #fff;
     border-radius: 8px;
-    padding: 10px;
+    padding: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -151,6 +151,40 @@ body {
     width: 100%;
     height: 100%;
     background: #fff;
+    display: block;
+}
+
+#staff-svg line {
+    shape-rendering: crispEdges;
+}
+
+#staff-svg .clef {
+    user-select: none;
+}
+
+/* Music note styling */
+.music-note {
+    pointer-events: none;
+    shape-rendering: geometricPrecision;
+}
+
+.music-note ellipse {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+    shape-rendering: geometricPrecision;
+    vector-effect: non-scaling-stroke;
+}
+
+.ledger-line {
+    shape-rendering: crispEdges;
+}
+
+/* Octave notation styling */
+.octave-notation text {
+    user-select: none;
+}
+
+.octave-notation line {
+    pointer-events: none;
 }
 
 .lesson-controls {
@@ -253,104 +287,154 @@ body {
     border-radius: 16px;
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    /* Ensure container doesn't overflow */
+    overflow: hidden;
+    max-width: 100%;
 }
 
 .piano-wrapper {
-    overflow-x: auto;
+    position: relative;
+    overflow: visible;
     padding: 20px;
     background: linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%);
     border-radius: 12px;
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.piano-wrapper::-webkit-scrollbar {
+    height: 12px;
+}
+
+.piano-wrapper::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 6px;
+}
+
+.piano-wrapper::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 6px;
+}
+
+.piano-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Scroll hint - subtle fade on edges */
+.piano-wrapper::before,
+.piano-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.piano-wrapper::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(26, 26, 26, 0.8), transparent);
+}
+
+.piano-wrapper::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(26, 26, 26, 0.8), transparent);
 }
 
 .piano-keyboard {
     display: flex;
     position: relative;
-    min-width: fit-content;
+    width: fit-content;
+    height: 210px;
     margin: 0 auto;
     padding: 10px;
+    background: #333;
+    border-radius: 10px;
 }
 
-.piano-key {
-    position: relative;
+/* Base key style - ALL keys use this */
+.key {
     cursor: pointer;
     user-select: none;
-    transition: all 0.1s ease;
-}
-
-.white-key {
-    width: 50px;
-    height: 200px;
-    background: linear-gradient(to bottom, #ffffff 0%, #f8f8f8 100%);
-    border: 1px solid #ddd;
-    border-top: 2px solid #e0e0e0;
-    border-radius: 0 0 8px 8px;
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-bottom: 12px;
-    color: #2c3e50;
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin-right: -1px;
+    font-weight: bold;
 }
 
-.white-key:hover {
+/* White keys */
+.key.white {
+    width: 50px;
+    height: 200px;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    color: #333;
+    font-size: 14px;
+    padding-bottom: 10px;
+    box-sizing: border-box;
+}
+
+.key.white:hover {
     background: #f0f0f0;
 }
 
-.white-key.pressed {
-    background: var(--key-pressed);
-    transform: translateY(2px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+.key.white.active {
+    background: #ffd700;
 }
 
-.black-key {
-    width: 32px;
+/* Black keys */
+.key.black {
+    width: 30px;
     height: 120px;
-    background: linear-gradient(to bottom, #1a1a1a 0%, #0a0a0a 100%);
-    border: 1px solid #000;
-    border-radius: 0 0 5px 5px;
-    box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.1), 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    position: absolute;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: black;
+    border: 1px solid black;
     color: white;
-    font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 9px;
     line-height: 1.2;
-    text-align: center;
+    padding-bottom: 8px;
+    position: absolute;
+    top: 10px;
+    z-index: 10;
 }
 
-.black-key:hover {
-    background: #2a2a2a;
+.key.black:hover {
+    background: #333;
 }
 
-.black-key.pressed {
-    background: var(--key-pressed);
-    transform: translateY(2px);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+.key.black.active {
+    background: #ffd700;
+    color: black;
+}
+
+/* Note labels */
+.note-label {
+    pointer-events: none;
+    user-select: none;
 }
 
 .key-label {
-    font-size: 0.85rem;
-    opacity: 0.8;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    user-select: none;
 }
 
 .white-key .key-label {
-    color: #2c3e50;
-    font-weight: 600;
+    color: #333;
+    font-weight: 700;
 }
 
 .black-key .key-label {
     color: #ffffff;
     font-weight: 600;
-    font-size: 0.7rem;
-    line-height: 1.1;
+    font-size: 0.65rem;
+    line-height: 1.2;
+}
+
+.black-key.pressed .key-label {
+    color: #000000;
 }
 
 .piano-controls {
@@ -358,6 +442,7 @@ body {
     gap: 20px;
     justify-content: center;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .checkbox-label {
@@ -428,16 +513,25 @@ body {
     
     .piano-wrapper {
         overflow-x: auto;
+        padding: 15px;
     }
     
-    .white-key {
+    .piano-container {
+        padding: 20px;
+    }
+    
+    .piano-keyboard {
+        height: 200px;
+    }
+    
+    .key.white {
         width: 40px;
         height: 180px;
     }
     
-    .black-key {
-        width: 28px;
-        height: 100px;
+    .key.black {
+        width: 24px;
+        height: 108px;
     }
 }
 
@@ -446,13 +540,30 @@ body {
         font-size: 2rem;
     }
     
-    .white-key {
+    .piano-container {
+        padding: 15px;
+    }
+    
+    .piano-wrapper {
+        padding: 10px;
+        scrollbar-width: auto;
+    }
+    
+    .piano-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .piano-keyboard {
+        height: 170px;
+    }
+    
+    .key.white {
         width: 35px;
         height: 150px;
     }
     
-    .black-key {
-        width: 24px;
+    .key.black {
+        width: 21px;
         height: 90px;
     }
     
