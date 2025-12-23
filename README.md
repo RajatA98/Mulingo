@@ -1,12 +1,16 @@
-# 🎹 Piano Learning Studio
+# 🎵 Mulingo
 
-A beautiful, interactive web application designed to help beginners learn piano step by step. This app provides an intuitive interface with visual feedback, interactive lessons, and real-time sound generation.
+**Learn music like Duolingo teaches language.**
+
+Mulingo is an interactive web application that makes learning music fun, engaging, and accessible. Just like Duolingo breaks down language learning into bite-sized lessons, Mulingo teaches music theory and piano playing through progressive, gamified exercises with instant feedback.
 
 ## Features
 
-- **Interactive Piano Keyboard**: Full-featured virtual piano with 2 octaves (C4 to C6)
+- **Interactive 88-Key Piano**: Full-featured virtual piano spanning A0 to C8
 - **Real-time Sound Generation**: Uses Web Audio API for authentic piano sounds
-- **Progressive Lessons**: 8 structured lessons from basic keys to playing melodies
+- **Progressive Lessons**: Structured lessons that build from basics to melodies
+- **Duolingo-Style Learning**: Bite-sized exercises with instant feedback and progress tracking
+- **Visual Sheet Music**: See notes on a staff as you play
 - **Visual Feedback**: Highlights keys, shows note names, and provides exercise feedback
 - **Multiple Input Methods**: Click keys with mouse or use computer keyboard
 - **Modern UI**: Beautiful, responsive design that works on desktop and mobile
@@ -90,11 +94,12 @@ A beautiful, interactive web application designed to help beginners learn piano 
 ## File Structure
 
 ```
-piano-learning-app/
+mulingo/
 ├── index.html      # Main HTML structure
 ├── styles.css     # Styling and layout
 ├── piano.js       # Piano keyboard and sound generation
 ├── lessons.js     # Lesson system and exercises
+├── sheetmusic.js  # Sheet music display
 ├── app.js         # Main application controller
 └── README.md      # This file
 ```
@@ -148,9 +153,11 @@ Feel free to fork this project and add your own features! Some ideas:
 - Advanced exercises
 - Multi-language support
 
----
+## Vision
 
-**Enjoy learning piano! 🎵**
+Mulingo aims to make music education as accessible and engaging as language learning. Just as Duolingo has made learning languages fun and approachable for millions, Mulingo brings the same gamified, progressive learning approach to music theory and piano playing.
+
+**Start your musical journey today! 🎵**
 
 
 

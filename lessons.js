@@ -1,4 +1,4 @@
-// Lesson System for Piano Learning
+// Lesson System for Mulingo - Music Learning App
 
 const lessons = [
     {

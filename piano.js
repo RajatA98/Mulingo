@@ -49,17 +49,16 @@ class Piano {
             if (isBlack) {
                 key.classList.add('black');
                 // Position black key centered between two white keys
-                // Keyboard container has padding: 10px
-                // White keys are 50px wide, positioned in flexbox starting at 10px (padding)
-                // When processing a black key, whiteCount is the index of the white key that came BEFORE it
-                // White key at whiteCount: left edge at (10px + whiteCount * 50px), right edge at (10px + whiteCount * 50px + 50px)
-                // White key at whiteCount + 1: left edge at (10px + (whiteCount + 1) * 50px)
-                // Center point between them: (right edge of whiteCount + left edge of whiteCount+1) / 2
-                // = (10 + whiteCount * 50 + 50 + 10 + (whiteCount + 1) * 50) / 2
-                // = (20 + whiteCount * 50 + 50 + whiteCount * 50 + 50) / 2
-                // = (20 + 2 * whiteCount * 50 + 100) / 2 = 10 + whiteCount * 50 + 50
-                // Black key is 30px wide, so left edge = center - 15 = 10 + whiteCount * 50 + 50 - 15 = 10 + whiteCount * 50 + 35
-                const leftPosition = 10 + (whiteCount * 50) + 35;
+                // When processing a black key, whiteCount has already been incremented by the previous white key
+                // So we need to use whiteCount - 1 to get the index of the white key that came BEFORE this black key
+                // The black key should be centered between white key at (whiteCount - 1) and white key at whiteCount
+                // White key at (whiteCount - 1): left edge at (10px + (whiteCount - 1) * 50px), right edge at (10px + (whiteCount - 1) * 50px + 50px)
+                // White key at whiteCount: left edge at (10px + whiteCount * 50px)
+                // Center point between them: (right edge of whiteCount-1 + left edge of whiteCount) / 2
+                // = (10 + (whiteCount - 1) * 50 + 50 + 10 + whiteCount * 50) / 2
+                // = (20 + whiteCount * 50 - 50 + 50 + whiteCount * 50) / 2 = (20 + 2 * whiteCount * 50) / 2 = 10 + whiteCount * 50
+                // Black key is 30px wide, so left edge = center - 15 = 10 + whiteCount * 50 - 15 = 10 + whiteCount * 50 - 15
+                const leftPosition = 10 + (whiteCount * 50) - 15;
                 key.style.left = Math.round(leftPosition) + 'px';
             } else {
                 key.classList.add('white');
