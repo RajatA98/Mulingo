@@ -294,14 +294,18 @@ body {
 
 .piano-wrapper {
     position: relative;
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
     padding: 20px;
     background: linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     margin-bottom: 20px;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .piano-wrapper::-webkit-scrollbar {
@@ -322,16 +326,17 @@ body {
     background: var(--primary-dark);
 }
 
-/* Scroll hint - subtle fade on edges */
+/* Scroll hint - subtle fade on edges (fixed to viewport, not scrollable) */
 .piano-wrapper::before,
 .piano-wrapper::after {
     content: '';
-    position: absolute;
+    position: fixed;
     top: 0;
     bottom: 0;
     width: 40px;
     pointer-events: none;
     z-index: 5;
+    display: none; /* Disable for now to prevent scrolling issue */
 }
 
 .piano-wrapper::before {
@@ -353,6 +358,12 @@ body {
     padding: 10px;
     background: #333;
     border-radius: 10px;
+    gap: 0;
+    align-items: flex-start;
+    overflow: visible;
+    /* Optimize rendering */
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 /* Base key style - ALL keys use this */
@@ -363,6 +374,8 @@ body {
     align-items: flex-end;
     justify-content: center;
     font-weight: bold;
+    margin: 0;
+    padding: 0;
 }
 
 /* White keys */
@@ -370,12 +383,26 @@ body {
     width: 50px;
     height: 200px;
     background: white;
-    border: 1px solid #ccc;
+    border-right: 1px solid #ccc;
     border-top: none;
+    border-bottom: none;
+    border-left: none;
     color: #333;
     font-size: 14px;
     padding-bottom: 10px;
     box-sizing: border-box;
+    flex-shrink: 0;
+    position: relative;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+    /* Pixel-perfect rendering */
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+.key.white:first-child {
+    border-left: 1px solid #ccc;
 }
 
 .key.white:hover {
@@ -391,7 +418,7 @@ body {
     width: 30px;
     height: 120px;
     background: black;
-    border: 1px solid black;
+    border: 1px solid #000;
     color: white;
     font-size: 9px;
     line-height: 1.2;
@@ -399,6 +426,11 @@ body {
     position: absolute;
     top: 10px;
     z-index: 10;
+    margin: 0;
+    box-sizing: border-box;
+    /* Pixel-perfect rendering */
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 .key.black:hover {
