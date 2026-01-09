@@ -75,12 +75,13 @@ class Piano {
             // Add color class
             if (isBlack) {
                 key.classList.add('black');
-                // Position black key centered between two white keys
+                // Position black key between two white keys
                 // When processing a black key, whiteCount has already been incremented by the previous white key
-                // The black key should be centered between white key at (whiteCount - 1) and white key at whiteCount
-                // Center point: (keyboardPadding + whiteCount * whiteKeyWidth)
-                // Black key left edge = center - (blackKeyWidth / 2)
-                const leftPosition = keyboardPadding + (whiteCount * whiteKeyWidth) - (blackKeyWidth / 2);
+                // The black key should be positioned between white key at (whiteCount - 1) and white key at whiteCount
+                // On mobile, shift slightly more to the right for better visual alignment
+                const isMobile = window.innerWidth <= 768;
+                const rightOffset = isMobile ? 3 : 0; // Extra rightward shift on mobile
+                const leftPosition = keyboardPadding + (whiteCount * whiteKeyWidth) - (blackKeyWidth / 2) + rightOffset;
                 key.style.left = Math.round(leftPosition) + 'px';
             } else {
                 key.classList.add('white');
@@ -265,7 +266,10 @@ class Piano {
                 
                 if (isBlack) {
                     // Recalculate black key position
-                    const leftPosition = keyboardPadding + (whiteCount * whiteKeyWidth) - (blackKeyWidth / 2);
+                    // On mobile, shift slightly more to the right for better visual alignment
+                    const isMobile = window.innerWidth <= 768;
+                    const rightOffset = isMobile ? 3 : 0; // Extra rightward shift on mobile
+                    const leftPosition = keyboardPadding + (whiteCount * whiteKeyWidth) - (blackKeyWidth / 2) + rightOffset;
                     key.style.left = Math.round(leftPosition) + 'px';
                 } else {
                     whiteCount++;
