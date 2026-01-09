@@ -132,7 +132,14 @@ class Piano {
             requestAnimationFrame(() => {
                 this.positionBlackKeys();
                 // Update marker visibility after layout
-                this.updateMiddleCMarker();
+                // Use a small delay on mobile to ensure proper rendering
+                if (window.innerWidth <= 768) {
+                    setTimeout(() => {
+                        this.updateMiddleCMarker();
+                    }, 100);
+                } else {
+                    this.updateMiddleCMarker();
+                }
             });
         });
     }
@@ -344,14 +351,19 @@ class Piano {
         marker.className = 'middle-c-marker';
         marker.setAttribute('aria-label', 'Middle C (C4)');
         
-        // Set initial visibility based on current state
-        marker.style.display = this.showMiddleCMarker ? 'flex' : 'none';
-        
         // Add marker text/icon
         const markerLabel = document.createElement('span');
         markerLabel.className = 'middle-c-label';
         markerLabel.textContent = 'C';
         marker.appendChild(markerLabel);
+        
+        // Set initial visibility based on current state
+        if (this.showMiddleCMarker) {
+            marker.style.display = 'flex';
+            marker.style.visibility = 'visible';
+        } else {
+            marker.style.display = 'none';
+        }
         
         keyElement.appendChild(marker);
         this.middleCMarker = marker;
@@ -361,6 +373,8 @@ class Piano {
         if (this.middleCMarker) {
             if (this.showMiddleCMarker) {
                 this.middleCMarker.style.display = 'flex';
+                this.middleCMarker.style.visibility = 'visible';
+                this.middleCMarker.style.opacity = '1';
             } else {
                 this.middleCMarker.style.display = 'none';
             }

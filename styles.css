@@ -412,13 +412,14 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     padding: 20px;
+    padding-top: 30px;
     background: linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     margin-bottom: 20px;
     display: flex;
     justify-content: flex-start;
-    align-items: center;
+    align-items: flex-start;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 }
@@ -529,6 +530,13 @@ body {
     background: #ffd700;
 }
 
+/* Ensure marker is visible even when key is active */
+.key.white.active .middle-c-marker {
+    opacity: 1;
+    visibility: visible;
+    z-index: 25;
+}
+
 /* Black keys */
 .key.black {
     width: 30px;
@@ -578,9 +586,12 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
-    z-index: 15;
+    z-index: 20;
     pointer-events: none;
     border: 2px solid rgba(255, 255, 255, 0.9);
+    /* Ensure marker is always visible */
+    visibility: visible;
+    opacity: 1;
 }
 
 .middle-c-label {
@@ -593,6 +604,50 @@ body {
 .key.black .middle-c-marker {
     /* For black keys (if needed in future), adjust positioning */
     top: 5px;
+}
+
+/* Responsive marker sizes */
+@media (max-width: 1024px) {
+    .middle-c-marker {
+        width: 28px;
+        height: 28px;
+        top: 6px;
+    }
+    
+    .middle-c-label {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .middle-c-marker {
+        width: 24px;
+        height: 24px;
+        top: 5px;
+        border-width: 1.5px;
+        /* Ensure marker is visible on mobile */
+        -webkit-transform: translateX(-50%);
+        transform: translateX(-50%);
+        /* Force hardware acceleration */
+        -webkit-backface-visibility: visible;
+        backface-visibility: visible;
+        /* Prevent any touch interference */
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    .middle-c-label {
+        font-size: 12px;
+        /* Ensure text is crisp on mobile */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Ensure the key container allows marker to be visible */
+    .key.white {
+        overflow: visible;
+    }
 }
 
 .key-label {
@@ -724,7 +779,10 @@ body {
     }
     
     .piano-wrapper {
+        overflow-x: auto;
+        overflow-y: hidden;
         padding: 10px;
+        padding-top: 20px;
         scrollbar-width: auto;
     }
     
