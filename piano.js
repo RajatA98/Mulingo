@@ -75,14 +75,7 @@ class Piano {
             // Add color class
             if (isBlack) {
                 key.classList.add('black');
-                // Position black key between two white keys
-                // When processing a black key, whiteCount has already been incremented by the previous white key
-                // The black key should be positioned between white key at (whiteCount - 1) and white key at whiteCount
-                // On mobile, shift slightly more to the right for better visual alignment
-                const isMobile = window.innerWidth <= 768;
-                const rightOffset = isMobile ? 3 : 0; // Extra rightward shift on mobile
-                const leftPosition = keyboardPadding + (whiteCount * whiteKeyWidth) - (blackKeyWidth / 2) + rightOffset;
-                key.style.left = Math.round(leftPosition) + 'px';
+                // Black keys will be positioned in positionBlackKeys() after all keys are created
             } else {
                 key.classList.add('white');
                 // Store the position of this white key for potential future use
@@ -120,6 +113,80 @@ class Piano {
         const totalWhiteKeys = whiteCount;
         const keyboardWidth = totalWhiteKeys * whiteKeyWidth;
         keyboard.style.minWidth = keyboardWidth + 'px';
+        
+        // Now position black keys based on actual white key positions
+        // Use requestAnimationFrame to ensure white keys are fully laid out first
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                this.positionBlackKeys();
+            });
+        });
+    }
+
+    positionBlackKeys() {
+        const blackKeyWidth = this.getBlackKeyWidth();
+        
+        // Position each black key between its adjacent white keys using actual rendered positions
+        this.keys.forEach(keyData => {
+            const note = keyData.note;
+            if (note.includes('#')) {
+                const key = keyData.element;
+                const noteName = note.replace(/\d/g, '');
+                const octaveMatch = note.match(/\d/);
+                const octave = octaveMatch ? parseInt(octaveMatch[0]) : 4;
+                
+                // Find which white keys this black key is between
+                // For example, C# is between C and D
+                let prevWhiteNote = null;
+                let nextWhiteNote = null;
+                
+                const noteNames = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+                if (noteName === 'C#') {
+                    prevWhiteNote = 'C';
+                    nextWhiteNote = 'D';
+                } else if (noteName === 'D#') {
+                    prevWhiteNote = 'D';
+                    nextWhiteNote = 'E';
+                } else if (noteName === 'F#') {
+                    prevWhiteNote = 'F';
+                    nextWhiteNote = 'G';
+                } else if (noteName === 'G#') {
+                    prevWhiteNote = 'G';
+                    nextWhiteNote = 'A';
+                } else if (noteName === 'A#') {
+                    prevWhiteNote = 'A';
+                    nextWhiteNote = 'B';
+                }
+                
+                if (prevWhiteNote && nextWhiteNote) {
+                    const prevNote = prevWhiteNote + octave;
+                    const nextNote = nextWhiteNote + octave;
+                    
+                    // Find the actual white key elements
+                    const prevWhiteKeyData = this.keys.find(k => k.note === prevNote);
+                    const nextWhiteKeyData = this.keys.find(k => k.note === nextNote);
+                    
+                    if (prevWhiteKeyData && nextWhiteKeyData) {
+                        const prevWhiteKey = prevWhiteKeyData.element;
+                        const nextWhiteKey = nextWhiteKeyData.element;
+                        
+                        // Get actual positions from the rendered elements
+                        const prevRect = prevWhiteKey.getBoundingClientRect();
+                        const nextRect = nextWhiteKey.getBoundingClientRect();
+                        const keyboardRect = document.getElementById('piano-keyboard').getBoundingClientRect();
+                        
+                        // Calculate center point between the right edge of previous white key and left edge of next white key
+                        const prevRightEdge = prevRect.right - keyboardRect.left;
+                        const nextLeftEdge = nextRect.left - keyboardRect.left;
+                        
+                        // Center is the midpoint
+                        const centerPosition = (prevRightEdge + nextLeftEdge) / 2;
+                        const leftPosition = centerPosition - (blackKeyWidth / 2);
+                        key.style.left = Math.round(leftPosition) + 'px';
+                    }
+                }
+            }
+        });
     }
 
     generateAllNotes() {
@@ -247,40 +314,28 @@ class Piano {
     }
 
     recalculateKeyPositions() {
-        // Get responsive key dimensions
+        // Update keyboard width first
         const whiteKeyWidth = this.getWhiteKeyWidth();
-        const blackKeyWidth = this.getBlackKeyWidth();
-        const keyboardPadding = 10;
         const keyboard = document.getElementById('piano-keyboard');
-
+        
+        // Count white keys
         let whiteCount = 0;
-        const notes = this.generateAllNotes();
-
-        // Recalculate positions for all keys
-        notes.forEach(note => {
-            const isBlack = note.includes('#');
-            const keyData = this.keys.find(k => k.note === note);
-            
-            if (keyData) {
-                const key = keyData.element;
-                
-                if (isBlack) {
-                    // Recalculate black key position
-                    // On mobile, shift slightly more to the right for better visual alignment
-                    const isMobile = window.innerWidth <= 768;
-                    const rightOffset = isMobile ? 3 : 0; // Extra rightward shift on mobile
-                    const leftPosition = keyboardPadding + (whiteCount * whiteKeyWidth) - (blackKeyWidth / 2) + rightOffset;
-                    key.style.left = Math.round(leftPosition) + 'px';
-                } else {
-                    whiteCount++;
-                }
+        this.keys.forEach(keyData => {
+            if (!keyData.note.includes('#')) {
+                whiteCount++;
             }
         });
-
-        // Update keyboard width
-        const totalWhiteKeys = whiteCount;
-        const keyboardWidth = totalWhiteKeys * whiteKeyWidth;
+        
+        const keyboardWidth = whiteCount * whiteKeyWidth;
         keyboard.style.minWidth = keyboardWidth + 'px';
+        
+        // Then recalculate black key positions after layout updates
+        // Use requestAnimationFrame to ensure white keys are re-laid out first
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                this.positionBlackKeys();
+            });
+        });
     }
 
     scrollToMiddleC() {
