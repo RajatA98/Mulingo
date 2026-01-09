@@ -137,6 +137,44 @@ const lessons = [
                 instruction: "Play Db, then Eb, then Gb, then Ab, then Bb"
             }
         ]
+    },
+    {
+        id: 11,
+        title: "Treble Clef: Spaces then Lines",
+        description: "Learn the treble clef notes with easy acronyms",
+        instruction: "Treble clef quick memory: Spaces spell F-A-C-E (\"FACE\"). Lines (bottom→top) are E-G-B-D-F (\"Every Good Boy Does Fine\"). Click Start Lesson to practice by playing the notes you see on the staff.",
+        type: "sequence",
+        exercises: [
+            {
+                type: "play_sequence",
+                notes: ["F4", "A4", "C5", "E5"],
+                instruction: "Treble clef SPACES = F-A-C-E (\"FACE\"). Play: F4 → A4 → C5 → E5"
+            },
+            {
+                type: "play_sequence",
+                notes: ["E4", "G4", "B4", "D5", "F5"],
+                instruction: "Treble clef LINES (bottom→top) = E-G-B-D-F (\"Every Good Boy Does Fine\"). Play: E4 → G4 → B4 → D5 → F5"
+            }
+        ]
+    },
+    {
+        id: 12,
+        title: "Bass Clef: Spaces then Lines",
+        description: "Learn the bass clef notes with easy acronyms",
+        instruction: "Bass clef quick memory: Spaces (bottom→top) are A-C-E-G (\"All Cows Eat Grass\"). Lines (bottom→top) are G-B-D-F-A (\"Good Boys Do Fine Always\"). Tip: bass notes are lower on the piano—scroll left if you don’t see them. Click Start Lesson to practice by playing the notes you see on the staff.",
+        type: "sequence",
+        exercises: [
+            {
+                type: "play_sequence",
+                notes: ["A2", "C3", "E3", "G3"],
+                instruction: "Bass clef SPACES (bottom→top) = A-C-E-G (\"All Cows Eat Grass\"). Play: A2 → C3 → E3 → G3"
+            },
+            {
+                type: "play_sequence",
+                notes: ["G2", "B2", "D3", "F3", "A3"],
+                instruction: "Bass clef LINES (bottom→top) = G-B-D-F-A (\"Good Boys Do Fine Always\"). Play: G2 → B2 → D3 → F3 → A3"
+            }
+        ]
     }
 ];
 

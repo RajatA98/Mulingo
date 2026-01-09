@@ -27,10 +27,37 @@ class Piano {
         }
     }
 
+    getWhiteKeyWidth() {
+        // Get the actual white key width based on viewport size
+        // This matches the CSS media queries
+        if (window.innerWidth <= 768) {
+            return 35; // Mobile
+        } else if (window.innerWidth <= 1024) {
+            return 40; // Tablet
+        }
+        return 50; // Desktop
+    }
+
+    getBlackKeyWidth() {
+        // Get the actual black key width based on viewport size
+        // This matches the CSS media queries
+        if (window.innerWidth <= 768) {
+            return 21; // Mobile
+        } else if (window.innerWidth <= 1024) {
+            return 24; // Tablet
+        }
+        return 30; // Desktop
+    }
+
     createSimpleKeyboard() {
         const keyboard = document.getElementById('piano-keyboard');
         keyboard.innerHTML = '';
         this.keys = [];
+
+        // Get responsive key dimensions
+        const whiteKeyWidth = this.getWhiteKeyWidth();
+        const blackKeyWidth = this.getBlackKeyWidth();
+        const keyboardPadding = 10; // Padding of piano-keyboard
 
         // Generate all 88 keys: A0 to C8
         const notes = this.generateAllNotes();
@@ -50,15 +77,10 @@ class Piano {
                 key.classList.add('black');
                 // Position black key centered between two white keys
                 // When processing a black key, whiteCount has already been incremented by the previous white key
-                // So we need to use whiteCount - 1 to get the index of the white key that came BEFORE this black key
                 // The black key should be centered between white key at (whiteCount - 1) and white key at whiteCount
-                // White key at (whiteCount - 1): left edge at (10px + (whiteCount - 1) * 50px), right edge at (10px + (whiteCount - 1) * 50px + 50px)
-                // White key at whiteCount: left edge at (10px + whiteCount * 50px)
-                // Center point between them: (right edge of whiteCount-1 + left edge of whiteCount) / 2
-                // = (10 + (whiteCount - 1) * 50 + 50 + 10 + whiteCount * 50) / 2
-                // = (20 + whiteCount * 50 - 50 + 50 + whiteCount * 50) / 2 = (20 + 2 * whiteCount * 50) / 2 = 10 + whiteCount * 50
-                // Black key is 30px wide, so left edge = center - 15 = 10 + whiteCount * 50 - 15 = 10 + whiteCount * 50 - 15
-                const leftPosition = 10 + (whiteCount * 50) - 15;
+                // Center point: (keyboardPadding + whiteCount * whiteKeyWidth)
+                // Black key left edge = center - (blackKeyWidth / 2)
+                const leftPosition = keyboardPadding + (whiteCount * whiteKeyWidth) - (blackKeyWidth / 2);
                 key.style.left = Math.round(leftPosition) + 'px';
             } else {
                 key.classList.add('white');
@@ -95,7 +117,7 @@ class Piano {
         
         // Ensure the keyboard container is wide enough for all keys
         const totalWhiteKeys = whiteCount;
-        const keyboardWidth = totalWhiteKeys * 50;
+        const keyboardWidth = totalWhiteKeys * whiteKeyWidth;
         keyboard.style.minWidth = keyboardWidth + 'px';
     }
 
@@ -134,7 +156,7 @@ class Piano {
     setupEventListeners() {
         const keyboard = document.getElementById('piano-keyboard');
         
-        keyboard.addEventListener('mousedown', (e) => {
+        const handleKeyPress = (e) => {
             const key = e.target.closest('.key');
             if (key) {
                 const note = key.dataset.note;
@@ -151,18 +173,37 @@ class Piano {
                     window.app.onKeyPress(note);
                 }
             }
-        });
+        };
 
-        keyboard.addEventListener('mouseup', (e) => {
+        const handleKeyRelease = (e) => {
             const key = e.target.closest('.key');
             if (key) {
                 key.classList.remove('active');
             }
-        });
+        };
 
+        // Mouse events
+        keyboard.addEventListener('mousedown', handleKeyPress);
+        keyboard.addEventListener('mouseup', handleKeyRelease);
         document.addEventListener('mouseup', () => {
             this.keys.forEach(k => k.element.classList.remove('active'));
         });
+
+        // Touch events for mobile
+        keyboard.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent scrolling when touching keys
+            handleKeyPress(e);
+        }, { passive: false });
+
+        keyboard.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleKeyRelease(e);
+        }, { passive: false });
+
+        keyboard.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            this.keys.forEach(k => k.element.classList.remove('active'));
+        }, { passive: false });
 
         // Show/hide note names
         const showNoteNamesCheckbox = document.getElementById('show-note-names');
@@ -193,6 +234,49 @@ class Piano {
                 }
             });
         }
+
+        // Handle window resize to recalculate key positions
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.recalculateKeyPositions();
+            }, 100); // Debounce resize events
+        });
+    }
+
+    recalculateKeyPositions() {
+        // Get responsive key dimensions
+        const whiteKeyWidth = this.getWhiteKeyWidth();
+        const blackKeyWidth = this.getBlackKeyWidth();
+        const keyboardPadding = 10;
+        const keyboard = document.getElementById('piano-keyboard');
+
+        let whiteCount = 0;
+        const notes = this.generateAllNotes();
+
+        // Recalculate positions for all keys
+        notes.forEach(note => {
+            const isBlack = note.includes('#');
+            const keyData = this.keys.find(k => k.note === note);
+            
+            if (keyData) {
+                const key = keyData.element;
+                
+                if (isBlack) {
+                    // Recalculate black key position
+                    const leftPosition = keyboardPadding + (whiteCount * whiteKeyWidth) - (blackKeyWidth / 2);
+                    key.style.left = Math.round(leftPosition) + 'px';
+                } else {
+                    whiteCount++;
+                }
+            }
+        });
+
+        // Update keyboard width
+        const totalWhiteKeys = whiteCount;
+        const keyboardWidth = totalWhiteKeys * whiteKeyWidth;
+        keyboard.style.minWidth = keyboardWidth + 'px';
     }
 
     scrollToMiddleC() {
@@ -221,10 +305,13 @@ class Piano {
             // Wait for layout, then set scroll position and make visible
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
+                    // Get responsive white key width
+                    const whiteKeyWidth = this.getWhiteKeyWidth();
+                    const keyboardPadding = 10;
+                    
                     // Calculate scroll position: center C4 in viewport
-                    // White key width is 50px, keyboard padding is 10px
-                    const c4Position = (whiteKeyIndex * 50) + 10; // Position of C4 key left edge relative to keyboard
-                    const scrollPosition = c4Position - (wrapper.clientWidth / 2) + 25; // Center it (25 = half key width)
+                    const c4Position = (whiteKeyIndex * whiteKeyWidth) + keyboardPadding; // Position of C4 key left edge relative to keyboard
+                    const scrollPosition = c4Position - (wrapper.clientWidth / 2) + (whiteKeyWidth / 2); // Center it
                     
                     // Set scroll position immediately (before making visible)
                     wrapper.scrollLeft = Math.max(0, scrollPosition);

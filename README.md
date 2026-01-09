@@ -65,9 +65,13 @@ Mulingo is an interactive web application that makes learning music fun, engagin
 3. **Learning F, G, A, B** - Complete the white keys
 4. **C Major Scale** - Play your first scale
 5. **Simple Melody: Twinkle Twinkle** - Play your first song
-6. **Black Keys Introduction** - Learn about sharps and flats
-7. **Chords: C Major** - Play your first chord
-8. **Simple Melody: Happy Birthday** - Play a familiar tune
+6. **Chords: C Major** - Play your first chord
+7. **Simple Melody: Happy Birthday** - Play a familiar tune
+8. **Black Keys Introduction** - Learn about sharps and flats
+9. **Playing Sharps** - Practice sharp notes (#)
+10. **Playing Flats** - Practice flat notes (♭)
+11. **Treble Clef: Spaces then Lines** - Memorize treble clef notes (FACE, EGBDF)
+12. **Bass Clef: Spaces then Lines** - Memorize bass clef notes (ACEG, GBDF(A))
 
 ## Features Explained
 
