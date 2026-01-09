@@ -514,6 +514,7 @@ body {
     /* Pixel-perfect rendering */
     transform: translateZ(0);
     will-change: transform;
+    overflow: visible;
 }
 
 .key.white:first-child {
@@ -561,6 +562,37 @@ body {
 .note-label {
     pointer-events: none;
     user-select: none;
+}
+
+/* Middle C marker */
+.middle-c-marker {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    z-index: 15;
+    pointer-events: none;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+.middle-c-label {
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.key.black .middle-c-marker {
+    /* For black keys (if needed in future), adjust positioning */
+    top: 5px;
 }
 
 .key-label {

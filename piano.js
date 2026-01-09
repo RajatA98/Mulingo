@@ -7,8 +7,15 @@ class Piano {
         this.pressedKeys = new Set();
         this.showNoteNames = true;
         this.highlightKeys = true;
+        this.showMiddleCMarker = true;
         this.highlightTimeouts = new Map();
+        this.middleCMarker = null;
         this.initAudioContext();
+        // Sync checkbox state before creating keyboard
+        const middleCMarkerCheckbox = document.getElementById('show-middle-c-marker');
+        if (middleCMarkerCheckbox) {
+            this.showMiddleCMarker = middleCMarkerCheckbox.checked;
+        }
         // Hide wrapper before creating keyboard to prevent left-side flash
         const wrapper = document.querySelector('.piano-wrapper');
         if (wrapper) {
@@ -107,6 +114,11 @@ class Piano {
 
             keyboard.appendChild(key);
             this.keys.push({ element: key, note: note });
+            
+            // Add middle C marker to C4 key
+            if (note === 'C4') {
+                this.addMiddleCMarker(key);
+            }
         });
         
         // Ensure the keyboard container is wide enough for all keys
@@ -119,6 +131,8 @@ class Piano {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 this.positionBlackKeys();
+                // Update marker visibility after layout
+                this.updateMiddleCMarker();
             });
         });
     }
@@ -303,14 +317,61 @@ class Piano {
             });
         }
 
+        // Middle C marker toggle
+        const middleCMarkerCheckbox = document.getElementById('show-middle-c-marker');
+        if (middleCMarkerCheckbox) {
+            middleCMarkerCheckbox.addEventListener('change', (e) => {
+                this.showMiddleCMarker = e.target.checked;
+                this.updateMiddleCMarker();
+            });
+        }
+
         // Handle window resize to recalculate key positions
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 this.recalculateKeyPositions();
+                // Update marker position after resize
+                this.updateMiddleCMarker();
             }, 100); // Debounce resize events
         });
+    }
+
+    addMiddleCMarker(keyElement) {
+        // Create marker element
+        const marker = document.createElement('div');
+        marker.className = 'middle-c-marker';
+        marker.setAttribute('aria-label', 'Middle C (C4)');
+        
+        // Set initial visibility based on current state
+        marker.style.display = this.showMiddleCMarker ? 'flex' : 'none';
+        
+        // Add marker text/icon
+        const markerLabel = document.createElement('span');
+        markerLabel.className = 'middle-c-label';
+        markerLabel.textContent = 'C';
+        marker.appendChild(markerLabel);
+        
+        keyElement.appendChild(marker);
+        this.middleCMarker = marker;
+    }
+
+    updateMiddleCMarker() {
+        if (this.middleCMarker) {
+            if (this.showMiddleCMarker) {
+                this.middleCMarker.style.display = 'flex';
+            } else {
+                this.middleCMarker.style.display = 'none';
+            }
+        } else {
+            // If marker doesn't exist yet, try to find C4 key and add it
+            const c4KeyData = this.keys.find(k => k.note === 'C4');
+            if (c4KeyData && c4KeyData.element) {
+                this.addMiddleCMarker(c4KeyData.element);
+                this.updateMiddleCMarker();
+            }
+        }
     }
 
     recalculateKeyPositions() {
@@ -334,6 +395,8 @@ class Piano {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 this.positionBlackKeys();
+                // Update marker visibility after recalculation
+                this.updateMiddleCMarker();
             });
         });
     }
