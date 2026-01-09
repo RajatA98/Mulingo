@@ -35,16 +35,12 @@ class PianoLearningApp {
 
         // Next lesson button
         document.getElementById('next-lesson-btn').addEventListener('click', () => {
+            // nextLesson will call loadLesson which handles button state
             this.lessonManager.nextLesson();
-            document.getElementById('start-lesson-btn').style.display = 'block';
-            document.getElementById('next-lesson-btn').style.display = 'none';
         });
 
         // Reset lesson button
         document.getElementById('reset-lesson-btn').addEventListener('click', () => {
-            this.lessonManager.resetLesson();
-            document.getElementById('start-lesson-btn').style.display = 'block';
-            document.getElementById('next-lesson-btn').style.display = 'none';
             // Clear sheet music when resetting
             if (this.sheetMusic) {
                 this.sheetMusic.clear();
@@ -52,6 +48,8 @@ class PianoLearningApp {
             if (this.scrollingSheetMusic) {
                 this.scrollingSheetMusic.clear();
             }
+            // Reset lesson will reload the lesson and handle button state
+            this.lessonManager.resetLesson();
         });
 
         // Prefer flats toggle
@@ -66,10 +64,21 @@ class PianoLearningApp {
     }
 
     startLesson() {
+        const currentLesson = this.lessonManager.currentLesson;
+        
+        // If lesson has navigateToNextOnStart flag, navigate to next lesson instead
+        if (currentLesson && currentLesson.navigateToNextOnStart) {
+            this.lessonManager.nextLesson();
+            return;
+        }
+        
         document.getElementById('start-lesson-btn').style.display = 'none';
         
-        const currentLesson = this.lessonManager.currentLesson;
         if (currentLesson && currentLesson.exercises.length > 0) {
+            // Show the exercise panel
+            const exercisePanel = document.getElementById('exercise-panel');
+            exercisePanel.style.display = 'block';
+            // Load the first exercise
             this.lessonManager.loadExercise(0);
         }
     }

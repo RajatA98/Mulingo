@@ -52,37 +52,37 @@
                         <button class="btn btn-secondary" id="next-lesson-btn" style="display: none;">Next Lesson</button>
                         <button class="btn btn-secondary" id="reset-lesson-btn">Reset</button>
                     </div>
-
-                    <div class="exercise-panel" id="exercise-panel" style="display: none;">
-                        <h3>Exercise</h3>
-                        <p id="exercise-instruction"></p>
-                        <div class="exercise-note-display">
-                            <div class="note-navigation">
-                                <button class="nav-arrow" id="prev-note-btn" aria-label="Previous note">←</button>
-                                <div class="exercise-sheet-music-container">
-                                    <div class="exercise-sheet-music">
-                                        <svg id="exercise-staff-svg" width="220" height="160" viewBox="0 0 220 160">
-                                            <!-- Staff lines (centered vertically) -->
-                                            <line x1="30" y1="60" x2="190" y2="60" stroke="#333" stroke-width="1.5"/>
-                                            <line x1="30" y1="70" x2="190" y2="70" stroke="#333" stroke-width="1.5"/>
-                                            <line x1="30" y1="80" x2="190" y2="80" stroke="#333" stroke-width="1.5"/>
-                                            <line x1="30" y1="90" x2="190" y2="90" stroke="#333" stroke-width="1.5"/>
-                                            <line x1="30" y1="100" x2="190" y2="100" stroke="#333" stroke-width="1.5"/>
-                                            <!-- Clef and notes will be added dynamically -->
-                                        </svg>
-                                    </div>
-                                </div>
-                                <button class="nav-arrow" id="next-note-btn" aria-label="Next note">→</button>
-                            </div>
-                            <div class="note-counter" id="note-counter"></div>
-                        </div>
-                        <div class="target-notes" id="target-notes" style="display: none;"></div>
-                        <div class="feedback" id="feedback"></div>
-                    </div>
                 </div>
             </div>
 
             <div class="piano-container">
+                <div class="exercise-panel" id="exercise-panel" style="display: none;">
+                    <h3>Exercise</h3>
+                    <p id="exercise-instruction"></p>
+                    <div class="exercise-note-display">
+                        <div class="note-navigation">
+                            <button class="nav-arrow" id="prev-note-btn" aria-label="Previous note">←</button>
+                            <div class="exercise-sheet-music-container">
+                                <div class="exercise-sheet-music">
+                                    <svg id="exercise-staff-svg" width="220" height="160" viewBox="0 0 220 160">
+                                        <!-- Staff lines (centered vertically) -->
+                                        <line x1="30" y1="60" x2="190" y2="60" stroke="#333" stroke-width="1.5"/>
+                                        <line x1="30" y1="70" x2="190" y2="70" stroke="#333" stroke-width="1.5"/>
+                                        <line x1="30" y1="80" x2="190" y2="80" stroke="#333" stroke-width="1.5"/>
+                                        <line x1="30" y1="90" x2="190" y2="90" stroke="#333" stroke-width="1.5"/>
+                                        <line x1="30" y1="100" x2="190" y2="100" stroke="#333" stroke-width="1.5"/>
+                                        <!-- Clef and notes will be added dynamically -->
+                                    </svg>
+                                </div>
+                            </div>
+                            <button class="nav-arrow" id="next-note-btn" aria-label="Next note">→</button>
+                        </div>
+                        <div class="note-counter" id="note-counter"></div>
+                    </div>
+                    <div class="target-notes" id="target-notes" style="display: none;"></div>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+                
                 <div class="song-sheet-music-container" id="song-sheet-music-container" style="display: none;">
                     <div class="song-sheet-music-wrapper">
                         <svg id="song-staff-svg" width="100%" height="180" viewBox="0 0 800 180" preserveAspectRatio="none">

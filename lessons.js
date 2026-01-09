@@ -3,10 +3,12 @@
 const lessons = [
     {
         id: 1,
-        title: "Introduction to Piano Keys",
-        description: "Learn the basic layout of piano keys",
-        instruction: "Click on any white key to hear its sound. Notice how the keys are arranged!",
+        title: "Playground",
+        description: "Explore the piano freely",
+        instruction: "Welcome to the playground! Click on any white key to hear its sound. Notice how the keys are arranged! Take your time to explore. When you're ready, click 'Start Learning' to begin your first lesson!",
         type: "exploration",
+        hasStartLearning: true,
+        navigateToNextOnStart: true,
         exercises: []
     },
     {
@@ -67,14 +69,6 @@ const lessons = [
     },
     {
         id: 6,
-        title: "Black Keys Introduction",
-        description: "Learn about sharps and flats",
-        instruction: "Black keys are sharps (#) or flats (♭). They're between certain white keys!",
-        type: "exploration",
-        exercises: []
-    },
-    {
-        id: 7,
         title: "Chords: C Major",
         description: "Play your first chord",
         instruction: "A chord is multiple notes played together. C Major is C-E-G",
@@ -88,7 +82,7 @@ const lessons = [
         ]
     },
     {
-        id: 8,
+        id: 7,
         title: "Simple Melody: Happy Birthday",
         description: "Play a familiar tune",
         instruction: "Let's play 'Happy Birthday'!",
@@ -98,6 +92,49 @@ const lessons = [
                 type: "play_sequence",
                 notes: ["C4", "C4", "D4", "C4", "F4", "E4", "C4", "C4", "D4", "C4", "G4", "F4"],
                 instruction: "Play the first part of Happy Birthday"
+            }
+        ]
+    },
+    {
+        id: 8,
+        title: "Black Keys Introduction",
+        description: "Learn about sharps and flats",
+        instruction: "Black keys are sharps (#) or flats (♭). A sharp raises a note by one semitone, and a flat lowers it by one semitone. The same black key can be both: C# is the same as Db, D# is the same as Eb, F# is the same as Gb, G# is the same as Ab, and A# is the same as Bb. Click 'Start Learning' to practice playing them!",
+        type: "exploration",
+        hasStartLearning: true,
+        exercises: [
+            {
+                type: "play_sequence",
+                notes: ["C#4", "D#4", "F#4", "G#4", "A#4", "C#5"],
+                instruction: "Play all the black keys: C#, D#, F#, G#, A#, C#"
+            }
+        ]
+    },
+    {
+        id: 9,
+        title: "Playing Sharps: C#, D#, F#, G#, A#",
+        description: "Learn to play sharp notes",
+        instruction: "Sharps (#) raise a note by one semitone. Let's practice playing sharp notes!",
+        type: "sequence",
+        exercises: [
+            {
+                type: "play_sequence",
+                notes: ["C#4", "D#4", "F#4", "G#4", "A#4"],
+                instruction: "Play C#, then D#, then F#, then G#, then A#"
+            }
+        ]
+    },
+    {
+        id: 10,
+        title: "Playing Flats: Db, Eb, Gb, Ab, Bb",
+        description: "Learn to play flat notes",
+        instruction: "Flats (♭) lower a note by one semitone. Let's practice playing flat notes!",
+        type: "sequence",
+        exercises: [
+            {
+                type: "play_sequence",
+                notes: ["Db4", "Eb4", "Gb4", "Ab4", "Bb4"],
+                instruction: "Play Db, then Eb, then Gb, then Ab, then Bb"
             }
         ]
     }
@@ -211,8 +248,14 @@ class LessonManager {
             }
         });
 
-        // Convert to preferred format (sharp or flat)
-        const displayNote = this.exerciseSheetMusic.getDisplayNote(note);
+        // For flat notes, preserve the flat notation (don't convert to sharp via getDisplayNote)
+        // This ensures flats are displayed correctly in flat lessons
+        const isFlatNote = note.includes('b');
+        let displayNote = note;
+        if (!isFlatNote) {
+            // Only use getDisplayNote for non-flat notes or when preferFlats is true
+            displayNote = this.exerciseSheetMusic.getDisplayNote(note);
+        }
 
         // Parse note
         const parsed = this.exerciseSheetMusic.parseNote(displayNote);
@@ -309,20 +352,30 @@ class LessonManager {
         // Update progress
         this.updateProgress();
 
-        // Show/hide exercise panel
+        // Handle exercises and exercise panel
         const exercisePanel = document.getElementById('exercise-panel');
-        if (this.currentLesson.exercises.length > 0) {
-            exercisePanel.style.display = 'block';
-            this.loadExercise(0);
-        } else {
+        const startLessonBtn = document.getElementById('start-lesson-btn');
+        
+        // For lessons with hasStartLearning, hide exercises initially and show "Start Learning" button
+        if (this.currentLesson.hasStartLearning) {
             exercisePanel.style.display = 'none';
+            startLessonBtn.style.display = 'block';
+            startLessonBtn.textContent = 'Start Learning';
+        } else if (this.currentLesson.exercises.length > 0) {
+            // Regular lessons with exercises - hide panel until "Start Lesson" is clicked
+            exercisePanel.style.display = 'none';
+            startLessonBtn.style.display = 'block';
+            startLessonBtn.textContent = 'Start Lesson';
+        } else {
+            // Exploration lessons without exercises
+            exercisePanel.style.display = 'none';
+            startLessonBtn.style.display = 'none';
         }
 
         // Update lesson list
         this.renderLessonsList();
 
         // Reset buttons
-        document.getElementById('start-lesson-btn').style.display = 'block';
         document.getElementById('next-lesson-btn').style.display = 'none';
     }
 
@@ -341,6 +394,12 @@ class LessonManager {
         const targetNotes = document.getElementById('target-notes');
         targetNotes.style.display = 'none';
         targetNotes.innerHTML = '';
+
+        // Set preferFlats for flat lessons to ensure flats are displayed correctly
+        if (this.exerciseSheetMusic && this.currentExercise.notes && this.currentExercise.notes.length > 0) {
+            const isFlatLesson = this.currentExercise.notes[0].includes('b');
+            this.exerciseSheetMusic.preferFlats = isFlatLesson;
+        }
 
         // For melody lessons, load all notes for sight reading
         if (this.currentLesson.type === 'melody' && window.scrollingSheetMusic && this.currentExercise.notes) {
@@ -371,7 +430,11 @@ class LessonManager {
             // Keep currentNoteIndex in sync with progress
             this.currentNoteIndex = expectedNoteIndex;
             
-            if (note === expectedNote) {
+            // Normalize both notes before comparison (handles sharps/flats equivalence)
+            const normalizedNote = this.normalizeNote(note);
+            const normalizedExpected = this.normalizeNote(expectedNote);
+            
+            if (normalizedNote === normalizedExpected) {
                 // Correct note!
                 // For melodies, highlight the note in the scrolling display
                 if (isMelody && window.scrollingSheetMusic) {
@@ -427,7 +490,12 @@ class LessonManager {
                 return false;
             }
         } else if (this.currentExercise.type === 'play_chord') {
-            if (this.currentExercise.notes.includes(note) && !this.exerciseProgress.includes(note)) {
+            // Normalize the played note and check against normalized expected notes
+            const normalizedNote = this.normalizeNote(note);
+            const normalizedExpectedNotes = this.currentExercise.notes.map(n => this.normalizeNote(n));
+            const normalizedProgress = this.exerciseProgress.map(n => this.normalizeNote(n));
+            
+            if (normalizedExpectedNotes.includes(normalizedNote) && !normalizedProgress.includes(normalizedNote)) {
                 // Correct note for chord! Show it in green
                 this.showNoteOnExerciseStaff(note, '#10b981');
                 this.exerciseProgress.push(note);
@@ -498,6 +566,23 @@ class LessonManager {
             const progress = ((this.currentLessonIndex + 1) / totalLessons) * 100;
             progressFill.style.width = `${progress}%`;
         }
+    }
+
+    normalizeNote(note) {
+        // Normalize notes so that sharps and flats that represent the same key are equivalent
+        // Convert flats to sharps for comparison (e.g., Db4 -> C#4, Eb4 -> D#4, etc.)
+        const flatToSharp = {
+            'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#'
+        };
+        
+        const match = note.match(/([A-G]b?)(\d)/);
+        if (!match) return note;
+        
+        const [, noteName, octave] = match;
+        if (flatToSharp[noteName]) {
+            return flatToSharp[noteName] + octave;
+        }
+        return note;
     }
 
     formatNote(note) {

@@ -366,7 +366,7 @@ class SheetMusic {
             noteGroup.appendChild(sharp);
         } else if (accidental === 'b') {
             const flat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            flat.setAttribute('x', x - 14);
+            flat.setAttribute('x', x - 19);
             flat.setAttribute('y', y + 5);
             flat.setAttribute('font-family', 'serif');
             flat.setAttribute('font-size', '18');
@@ -665,11 +665,9 @@ class ScrollingSheetMusic {
         if (!this.svg) return;
         this.currentClef = clef;
         
-        // Remove existing clef
-        const existingClef = this.svg.querySelector('.clef');
-        if (existingClef) {
-            existingClef.remove();
-        }
+        // Remove all existing clef elements (text and dots)
+        const existingClefs = this.svg.querySelectorAll('.clef');
+        existingClefs.forEach(el => el.remove());
 
         const clefElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         clefElement.classList.add('clef');
@@ -835,7 +833,7 @@ class ScrollingSheetMusic {
             noteGroup.appendChild(sharp);
         } else if (accidental === 'b') {
             const flat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            flat.setAttribute('x', x - 14);
+            flat.setAttribute('x', x - 19);
             flat.setAttribute('y', y + 5);
             flat.setAttribute('font-family', 'serif');
             flat.setAttribute('font-size', '18');
@@ -1088,7 +1086,7 @@ class ScrollingSheetMusic {
             noteGroup.appendChild(sharp);
         } else if (accidental === 'b') {
             const flat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            flat.setAttribute('x', x - 14);
+            flat.setAttribute('x', x - 19);
             flat.setAttribute('y', y + 5);
             flat.setAttribute('font-family', 'serif');
             flat.setAttribute('font-size', '18');
